@@ -1,5 +1,14 @@
 pipeline {
     agent any
+
+    tools {
+        nodejs 'NodeJS_18' // Make sure this matches your configured Jenkins Node.js tool name
+    }
+
+    environment {
+        NODE_ENV = 'development'
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -31,29 +40,19 @@ pipeline {
             }
         }
 
-        stage('Start Backend Server') {
-            steps {
-                dir('server') {
-                    sh 'npm run server &'
-                }
-            }
-        }
+        // Optional: Add test stages here if available
 
-        stage('Start Frontend Server') {
-            steps {
-                dir('src') {
-                    sh 'npm run dev &'
-                }
-            }
-        }
+        // Deployment or Run step should not be backgrounded in a Jenkins pipeline.
+        // Use proper tools if needed (Docker, PM2, etc.)
+
     }
 
     post {
         success {
-            echo 'Application has been built and started successfully.'
+            echo '✅ Build completed successfully.'
         }
         failure {
-            echo 'Build failed. Please check the logs for details.'
+            echo '❌ Build failed. Check the logs.'
         }
     }
 }
