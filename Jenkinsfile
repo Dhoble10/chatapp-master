@@ -13,12 +13,6 @@ pipeline {
     stages {
         
 
-        stage('Install Dependencies') {
-            steps {
-                sh 'npm install'
-            }
-        }
-
         stage('Lint / Test') {
             steps {
                 // Run linter or test suite if available
