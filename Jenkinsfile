@@ -23,20 +23,20 @@ pipeline {
             }
         }
 
-      stage('Start Backend Server') {
+        stage('Install Backend Dependencies') {
+            steps {
+                dir('server') {
+                    bat 'npm install'
+                }
+            }
+        }
+
+       stage('Start Backend Server') {
   steps {
     bat 'start /B npm run server'  // /B runs in the same window without a new console
   }
 }
 
-
-        stage('Start Backend Server') {
-            steps {
-                dir('server') {
-                    bat 'npm run server &'
-                }
-            }
-        }
 
         stage('Start Frontend Server') {
             steps {
