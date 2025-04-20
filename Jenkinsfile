@@ -10,7 +10,7 @@ pipeline {
         stage('Install Frontend Dependencies') {
             steps {
                 dir('src') {
-                    sh 'npm install'
+                    bat 'npm install'
                 }
             }
         }
