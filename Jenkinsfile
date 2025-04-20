@@ -11,11 +11,7 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git url: 'https://github.com/Dhoble10/chatapp-master.git', credentialsId: 'your-github-credentials-id'
-            }
-        }
+        
 
         stage('Install Dependencies') {
             steps {
