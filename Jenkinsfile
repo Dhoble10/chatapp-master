@@ -18,7 +18,7 @@ pipeline {
         stage('Build Frontend') {
             steps {
                 dir('src') {
-                    sh 'npm run build'
+                    bat 'npm run build'
                 }
             }
         }
@@ -26,7 +26,7 @@ pipeline {
         stage('Install Backend Dependencies') {
             steps {
                 dir('server') {
-                    sh 'npm install'
+                    bat 'npm install'
                 }
             }
         }
@@ -34,7 +34,7 @@ pipeline {
         stage('Start Backend Server') {
             steps {
                 dir('server') {
-                    sh 'npm run server &'
+                    bat 'npm run server &'
                 }
             }
         }
@@ -42,7 +42,7 @@ pipeline {
         stage('Start Frontend Server') {
             steps {
                 dir('src') {
-                    sh 'npm run dev &'
+                    bat 'npm run dev &'
                 }
             }
         }
