@@ -41,8 +41,8 @@ pipeline {
  stage('Start Frontend Server') {
   steps {
     bat 'start /B npm start'
-  }
-}
+       }
+     }
     }
 
     post {
