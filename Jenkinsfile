@@ -1,40 +1,58 @@
 pipeline {
     agent any
 
-    environment {
-        // Optional: Define environment variables if needed
-        NODE_ENV = 'development'
+    tools {
+        nodejs 'NodeJS' // This should match the name set in Global Tool Config
     }
 
-    tools {
-        nodejs 'NodeJS_18'  // Replace with your Jenkins Node.js tool name
+    environment {
+        APP_NAME = 'ChatApp'
     }
 
     stages {
-        
+        stage('Clone Repo') {
+            steps {
+                git 'https://github.com/Dhoble10/chatapp-master.git'
+            }
+        }
 
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Lint & Test') {
+            steps {
+                // Optional: If you have ESLint or test scripts
+                echo 'Running linter or tests (if configured)...'
+                // sh 'npm run lint'
+                // sh 'npm test'
+            }
+        }
 
         stage('Build') {
             steps {
-                // If there's a build step (e.g., React/Angular), otherwise skip
-                sh 'npm run build || echo "No build script found"'
+                echo 'No build step needed for Node.js app, continuing...'
             }
         }
 
         stage('Deploy') {
             steps {
-                echo 'Deploying app...'
-                // Add deploy logic here (e.g., Docker, SCP, PM2, etc.)
+                echo 'Deploying to server...'
+                // Replace this with actual deploy step, like:
+                // sh 'scp -r * user@server:/path/to/deploy'
+                // Or docker build + push
             }
         }
     }
 
     post {
         success {
-            echo 'Build completed successfully.'
+            echo 'Pipeline completed successfully.'
         }
         failure {
-            echo 'Build failed.'
-        }
-    }
+            echo 'Pipeline failed.'
+        }
+    }
 }
