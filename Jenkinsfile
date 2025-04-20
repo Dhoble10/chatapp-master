@@ -1,19 +1,9 @@
 pipeline {
     agent any
-
-    tools {
-        nodejs 'NodeJS_18' // Replace with your configured Node.js version in Jenkins
-    }
-
-    environment {
-        // Define any necessary environment variables here
-        NODE_ENV = 'development'
-    }
-
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/Dhoble10/chatapp-master.git', credentialsId: '20e9b267-e8f7-410b-84ee-c59dd65ba49c'
+                git branch: 'main', url: 'https://github.com/Dhoble10/chatapp-master.git', credentialsId: '20e9b267-e8f7-410b-84ee-c59dd65ba49c'
             }
         }
 
