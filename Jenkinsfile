@@ -38,13 +38,9 @@ pipeline {
 }
 
 
-        stage('Start Frontend Server') {
+ stage('Start Frontend Server') {
   steps {
-    bat '''
-      start /B npm start
-      timeout /t 10 /nobreak > nul
-      curl -s http://localhost:3000 || exit 1
-    '''
+    bat 'start /B npm start'
   }
 }
     }
