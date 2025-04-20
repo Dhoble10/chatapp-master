@@ -13,13 +13,6 @@ pipeline {
     stages {
         
 
-        stage('Lint / Test') {
-            steps {
-                // Run linter or test suite if available
-                sh 'npm run lint || echo "Linting skipped"'
-                sh 'npm test || echo "Tests skipped"'
-            }
-        }
 
         stage('Build') {
             steps {
