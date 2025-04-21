@@ -1,5 +1,11 @@
 pipeline {
     agent any
+
+    environment {
+        FRONTEND_DIR = 'src'
+        BACKEND_DIR = 'server'
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -7,50 +13,52 @@ pipeline {
             }
         }
 
-        stage('Install Frontend Dependencies') {
-            steps {
-                dir('src') {
-                    bat 'npm install'
+        stage('Install Dependencies') {
+            parallel {
+                stage('Frontend') {
+                    steps {
+                        dir("${env.FRONTEND_DIR}") {
+                            bat 'npm install'
+                        }
+                    }
+                }
+                stage('Backend') {
+                    steps {
+                        dir("${env.BACKEND_DIR}") {
+                            bat 'npm install'
+                        }
+                    }
                 }
             }
         }
 
         stage('Build Frontend') {
             steps {
-                dir('src') {
+                dir("${env.FRONTEND_DIR}") {
                     bat 'npm run build'
                 }
             }
         }
 
-        stage('Install Backend Dependencies') {
+        stage('Start Servers (Optional for Testing)') {
             steps {
-                dir('server') {
-                    bat 'npm install'
-                }
+                echo 'Starting backend and frontend servers...'
+                bat "start /B cmd /c \"cd ${env.BACKEND_DIR} && npm run server\""
+                bat "start /B cmd /c \"cd ${env.FRONTEND_DIR} && npm start\""
             }
         }
-
-       stage('Start Backend Server') {
-  steps {
-    bat 'start /B npm run server'  // /B runs in the same window without a new console
-  }
-}
-
-
- stage('Start Frontend Server') {
-  steps {
-    bat 'start /B npm start'
-       }
-     }
     }
 
     post {
         success {
-            echo 'Application has been built and started successfully.'
+            echo '✅ Application built and started successfully.'
         }
         failure {
-            echo 'Build failed. Please check the logs for details.'
+            echo '❌ Build failed. Check the logs for more details.'
+        }
+        always {
+            echo '🧹 Cleaning up node processes (if any)...'
+            bat 'taskkill /F /IM node.exe || echo "No node processes to kill."'
         }
     }
 }
