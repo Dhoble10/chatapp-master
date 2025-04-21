@@ -25,7 +25,7 @@ const Navbar: React.FC = () => {
             <Menu size={24} />
           </button>
           <Link to="/" className="flex items-center ml-2 md:ml-0">
-            <span className="self-center text-xl font-semibold whitespace-nowrap text-blue-600">ChatApp5</span>
+            <span className="self-center text-xl font-semibold whitespace-nowrap text-blue-600">ChatApp</span>
           </Link>
         </div>
 
