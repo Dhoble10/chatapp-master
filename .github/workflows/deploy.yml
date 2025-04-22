@@ -13,50 +13,46 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Configure SSH
+      - name: Configure SSH Access
         env:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           SSH_HOST: ${{ secrets.DEPLOY_HOST }}
           SSH_USER: ${{ secrets.DEPLOY_USER }}
         run: |
-          mkdir -p ~/.ssh/
+          mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          echo -e "Host ec2\n\tHostName $SSH_HOST\n\tUser $SSH_USER\n\tIdentityFile ~/.ssh/deploy_key\n\tStrictHostKeyChecking no" > ~/.ssh/config
+          echo -e "Host ec2\n  HostName $SSH_HOST\n  User $SSH_USER\n  IdentityFile ~/.ssh/deploy_key\n  StrictHostKeyChecking no" > ~/.ssh/config
 
-      - name: Create folders on EC2 if not exist
+      - name: Create Project Directories on EC2
         run: |
           ssh ec2 "
             mkdir -p ~/chatapp/server
             mkdir -p ~/chatapp/src
           "
 
-      - name: Copy server/ (backend) to EC2
+      - name: Copy Backend Files (server/) to EC2
         run: |
           scp -r server/* ec2:~/chatapp/server/
 
-      - name: Copy src/ (frontend) to EC2
+      - name: Copy Frontend Files (src/) to EC2
         run: |
           scp -r src/* ec2:~/chatapp/src/
 
-      - name: Install dependencies, build frontend & restart backend
+      - name: Install Dependencies, Build Frontend, and Start Backend
         run: |
           ssh ec2 "
-            # Backend setup
+            # ⬇ Backend Setup
             cd ~/chatapp/server &&
             npm install &&
-
-            # Start/restart backend via PM2
-            pm2 describe chat-backend || pm2 start index.js --name chat-backend --watch &&
+            pm2 describe chat-backend || pm2 start index.js --name chat-backend &&
             pm2 restart chat-backend &&
 
-            # Frontend setup
+            # ⬇ Frontend Setup
             cd ~/chatapp/src &&
             npm install &&
             npm run build &&
             npm install -g serve &&
-
-            # Serve frontend on port 3000 (can replace with Nginx later)
-            pm2 describe chat-frontend || pm2 start \"serve -s dist -l 3000\" --name chat-frontend &&
+            pm2 describe chat-frontend || pm2 start 'serve -s dist -l 3000' --name chat-frontend &&
             pm2 restart chat-frontend
           "
