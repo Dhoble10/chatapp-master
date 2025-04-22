@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
       - name: Configure SSH
         env:
@@ -23,33 +24,39 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           echo -e "Host ec2\n\tHostName $SSH_HOST\n\tUser $SSH_USER\n\tIdentityFile ~/.ssh/deploy_key\n\tStrictHostKeyChecking no" > ~/.ssh/config
 
-      - name: Install PM2 and setup directory
+      - name: Create folders on EC2 if not exist
         run: |
           ssh ec2 "
-            # Install Node.js and npm if not installed (for Ubuntu)
-            if ! command -v node &> /chatapp-master/null; then
-              curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
-              sudo apt-get install -y nodejs
-            fi
-
-            # Install PM2 globally if not installed
-            if ! command -v pm2 &> /chatapp-master/null; then
-              sudo npm install -g pm2
-            fi
-
-            # Create chatapp-master directory if it doesn't exist
-            mkdir -p ~/chatapp-master
+            mkdir -p ~/chatapp/server
+            mkdir -p ~/chatapp/src
           "
 
-      - name: Deploy to EC2
+      - name: Copy server/ (backend) to EC2
         run: |
-          # Copy current repository files to EC2
-          scp -r ./* ec2:~/chatapp-master/
+          scp -r server/* ec2:~/chatapp/server/
 
-          # Install dependencies and start/restart the application
+      - name: Copy src/ (frontend) to EC2
+        run: |
+          scp -r src/* ec2:~/chatapp/src/
+
+      - name: Install dependencies, build frontend & restart backend
+        run: |
           ssh ec2 "
-            cd ~/chatapp-master && 
-            npm install && 
-            pm2 describe index || pm2 start server/index.js --name index
-            pm2 restart index
+            # Backend setup
+            cd ~/chatapp/server &&
+            npm install &&
+
+            # Start/restart backend via PM2
+            pm2 describe chat-backend || pm2 start index.js --name chat-backend --watch &&
+            pm2 restart chat-backend &&
+
+            # Frontend setup
+            cd ~/chatapp/src &&
+            npm install &&
+            npm run build &&
+            npm install -g serve &&
+
+            # Serve frontend on port 3000 (can replace with Nginx later)
+            pm2 describe chat-frontend || pm2 start \"serve -s dist -l 3000\" --name chat-frontend &&
+            pm2 restart chat-frontend
           "
