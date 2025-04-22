@@ -1,0 +1,55 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.DEPLOY_HOST }}
+          SSH_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo -e "Host ec2\n\tHostName $SSH_HOST\n\tUser $SSH_USER\n\tIdentityFile ~/.ssh/deploy_key\n\tStrictHostKeyChecking no" > ~/.ssh/config
+
+      - name: Install PM2 and setup directory
+        run: |
+          ssh ec2 "
+            # Install Node.js and npm if not installed (for Ubuntu)
+            if ! command -v node &> /chatapp-master/null; then
+              curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+            fi
+
+            # Install PM2 globally if not installed
+            if ! command -v pm2 &> /chatapp-master/null; then
+              sudo npm install -g pm2
+            fi
+
+            # Create chatapp-master directory if it doesn't exist
+            mkdir -p ~/chatapp-master
+          "
+
+      - name: Deploy to EC2
+        run: |
+          # Copy current repository files to EC2
+          scp -r ./* ec2:~/chatapp-master/
+
+          # Install dependencies and start/restart the application
+          ssh ec2 "
+            cd ~/chatapp-master && 
+            npm install && 
+            pm2 describe index || pm2 start server/index.js --name index
+            pm2 restart index
+          "
