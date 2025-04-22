@@ -29,7 +29,7 @@ const Chat: React.FC = () => {
     const interval = setInterval(() => {
       if (id) {
         loadMessages(id);
-      }
+      }``
     }, 10000);
 
     return () => clearInterval(interval);
@@ -88,7 +88,7 @@ const Chat: React.FC = () => {
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-900">{currentChat.user.username}</p>
                 <p className="text-xs text-gray-500">
-                  {userTyping?.userId === id && userTyping.isTyping 
+                  {userTyping?.userId === id && userTyping.isTyping
                     ? 'Typing...' 
                     : currentChat.user.status === 'online'
                       ? 'Online'
